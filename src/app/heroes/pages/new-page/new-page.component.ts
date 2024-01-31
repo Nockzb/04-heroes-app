@@ -1,6 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { Publisher } from '../../interfaces/hero.interface';
+import { Hero, Publisher } from '../../interfaces/hero.interface';
+import { HeroesService } from '../../services/heroes.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { switchMap } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-new-page',
@@ -8,10 +14,14 @@ import { Publisher } from '../../interfaces/hero.interface';
   styles: [
   ]
 })
-export class NewPageComponent {
+
+export class NewPageComponent implements OnInit {
+
+  //public hero?: Hero;
+
   public heroForm = new FormGroup({
-    id: new FormControl<string>('', { nonNullable: true}),
-    superhero: new FormControl<string>(''),
+    id: new FormControl<string>(''),
+    superhero: new FormControl<string>('', { nonNullable: true}),
     publisher: new FormControl<Publisher>(Publisher.DCComics),
     alter_ego: new FormControl(''),
     first_appearance: new FormControl(''),
@@ -19,7 +29,30 @@ export class NewPageComponent {
     alt_img: new FormControl(''),
   });
 
+  constructor (private heroesService : HeroesService,
+               private router: Router,
+               private activatedRoute: ActivatedRoute,
+               private snackBar: MatSnackBar,
+               private dialog: MatDialog) {}
 
+  ngOnInit(): void {
+      if (!this.router.url.includes('edit')) return;
+      
+      this.activatedRoute.params
+        .pipe(
+          switchMap(({ id }) => this.heroesService.getHeroesById(id)) // Desesctructuramos params para obtener el 'id'
+          ).subscribe( hero => { 
+              if (!hero) return this.router.navigate([ '/heroes/list' ])
+              // Se rellena el formulario con los datos del heroe a editar
+              this.heroForm.reset(hero)              
+              return
+          })        
+  }
+
+  public get currentHero(): Hero {
+    const hero = this.heroForm.value as Hero;
+    return hero;
+  }
 
   public publishers = [
     { id: 'DC Comics', desc: 'DC - Comics'},
@@ -27,6 +60,44 @@ export class NewPageComponent {
   ]
 
   onSubmit(): void {
-    console.log(this.heroForm);
+    if (this.heroForm.invalid) return;
+
+    // Si tenemos un id, es actualizacion
+    if (this.currentHero.id) {
+      this.heroesService.updateHero(this.currentHero)
+        .subscribe( hero => {
+          this.showSnackbar(`${ hero.superhero } actualizado correctamente.`)
+        })
+      return;
+    }
+
+    // Si no hay id, se añade uno nuevo
+    this.heroesService.addHero(this.currentHero)
+      .subscribe( hero => {
+        this.showSnackbar(`${ hero.superhero } creado correctamente.`)
+      })
+  }
+
+  private showSnackbar(msj: string): void {
+    this.snackBar.open(msj, 'OK', {
+      duration: 3000
+    })
+  }
+
+  public onDeleteHero() {
+    if (!this.currentHero.id) throw Error ('Hero id is required');
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: this.heroForm.value
+    });
+
+    dialogRef.afterClosed().subscribe( result =>{
+      if(result == true)
+      // Delete the selected hero 
+      this.heroesService.deleteHeroById(this.currentHero.id).subscribe();    
+      this.router.navigate(['heroes/list'])
+      this.showSnackbar(`${ this.currentHero.superhero } eliminado correctamente.`)
+
+    })
   }
 }

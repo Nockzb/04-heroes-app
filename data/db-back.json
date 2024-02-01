@@ -166,6 +166,15 @@
         "alter_ego": "Norrin Radd",
         "first_appearance": "The Fantastic Four #48",
         "characters": "Norrin Radd"
+      },
+      {
+        "id": "XYXH8Mp",
+        "superhero": "El Chapulin Colorado",
+        "publisher": "Marvel Comics",
+        "alter_ego": "Chespirito",
+        "first_appearance": "El Chavo del 8",
+        "characters": "Chavo, Chompiras",
+        "alt_img": "https://cdnb.artstation.com/p/assets/images/images/052/173/985/large/christian-lopez-66053253.jpg?1659115322"
       }
     ]
   }

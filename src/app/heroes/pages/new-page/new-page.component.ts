@@ -95,62 +95,21 @@ export class NewPageComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result === true) { // si confirma
         this.heroesService.deleteHeroById(this.currentHero.id).subscribe(
+          (error) => {
+            // Verificar el tipo de error (404 Not Found)
+            if (!error) {          
+              this.showSnackbar(`Error al eliminar, el héroe no existe.`);
+              this.router.navigate(['heroes/list']);
+            }
+          },
           () => {
             // Intentar navegar solo si la eliminación fue exitosa
             this.router.navigate(['heroes/list']);
             this.showSnackbar(`${this.currentHero.superhero} eliminado correctamente.`);
-          },
-          (error) => {
-            // Verificar el tipo de error (404 Not Found)
-            if (error.status === 404) {
-              this.showSnackbar(`Error: El héroe no existe.`);
-            } else {
-              this.showSnackbar(`Error al eliminar el héroe.`);
-            }
-          }
-        );
-      } else if (result === false) {
-        this.showSnackbar(`Error al eliminar el héroe.`);
-      } else {
+          });
+      } else if (result === undefined) {
         this.showSnackbar(`NO se ha eliminado el héroe.`);
       }
     });
   }
-
-
-  // public onDeleteHero() {
-  //   if (!this.currentHero.id) {
-  //     throw Error('Hero id is required');
-  //   }
-
-  //   const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-  //     data: this.heroForm.value,
-  //   });
-
-  //   dialogRef.afterClosed().subscribe((result) => {
-
-  //     if (result === true) {
-  //       // si confirma
-  //       this.heroesService.deleteHeroById(this.currentHero.id).subscribe(
-  //         () => {
-  //           // Intentar navegar solo si la eliminación fue exitosa
-  //           this.router.navigate(['heroes/list']);
-  //           this.showSnackbar(
-  //             `${this.currentHero.superhero} eliminado correctamente.`
-  //           );
-  //         },
-  //         (error) => {
-  //           // Verificar el tipo de error (404 Not Found)
-  //           if (error.status === 404) {
-  //             this.showSnackbar(`Error: El héroe no existe.`);
-  //           } else {
-  //             this.showSnackbar(`Error al eliminar el héroe.`);
-  //           }
-  //         }
-  //       );
-  //     } else if (result === false || result === undefined) {
-  //       this.showSnackbar(`NO se ha eliminado el héroe.`);
-  //     }
-  //   });
-  // }
 }

@@ -20,7 +20,7 @@ export class ConfirmDialogComponent {
   ) {}
 
   onNoClick(): void {
-    this.dialogRef.close(false);
+    this.dialogRef.close(undefined);
   }
 
   onConfirm(): void {

@@ -34,9 +34,9 @@ export class AuthService {
         localStorage.clear();
     }
 
-    checkAuthentication(): Observable<boolean> | boolean {
+    checkAuthentication(): Observable<boolean> {
         // Si no hay token se devuelve false
-        if (!localStorage.getItem('token')) return false;
+        if (!localStorage.getItem('token')) return of(false);
 
         const TOKEN = localStorage.getItem('token');
 
